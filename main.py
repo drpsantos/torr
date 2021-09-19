@@ -1,7 +1,7 @@
 import streamlit as st
 import numpy as np
-#import plotly.graph_objects as go
-#import plotly.express as px
+import plotly.graph_objects as go
+import plotly.express as px
 import maths
 import charts
 import pandas as pd
