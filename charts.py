@@ -20,6 +20,7 @@ def mass_flow_funnel(mass_flows,moisture_content):
         showticklabels = False
     )
     return fig
+    
 
 def torr_sizing(t1,t2,cp,mfr):
     reactor_diameter = np.arange(0.5,6.0,0.5)
