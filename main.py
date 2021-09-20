@@ -24,7 +24,7 @@ password = st.sidebar.text_input(label='Enter password to access report')
 
 if password == st.secrets['report_password']:
     st.title('PMRR Torrefaction Design Dashboard')
-    st.caption('Preliminary Calculations as of SEP 19 2021')
+    st.caption('Initial Calculations as of SEP 19 2021')
     st.caption('This dashboard is interactive. Feel free to change the values of the parameters in each section. The dashboard will automatically recalculate the entire report for you :smiley:')
 
     st.header('I. Production Overview')
@@ -78,14 +78,29 @@ if password == st.secrets['report_password']:
 
     s2col1.text('Reactor Parameters')
     d_reactor = s2col1.number_input('Reactor Diameter (in)',5.0,30.0,18.0,0.5)
-    rpm_screw = s2col1.number_input('Conveyor Rotational Frequency (RPM)',1.0,6.0,1.0,0.5)
+    rpm_screw = s2col1.number_input('Conveyor Rotational Frequency (RPM)',0.5,6.0,1.0,0.5)
     fill_frac = s2col1.number_input('Conveyor Fill Factor',0.1,0.8,0.6,0.05)
     s2col2.text('Thermal Parameters')
-    deltaT = s2col2.number_input('Heating Rate (degC/min.)',50.0,100.0,50.0,10.0)
+    heat_loss = s2col2.number_input('System Loss (%)',0.01,0.99,0.1,0.01)
 
-    sec2resultsdf = maths.get_sec2results(cp_t,t_d,t_t,deltaT,d_reactor,fill_frac,rpm_screw)
+    sec2resultsdf = maths.get_sec2results(cp_t,t_d,t_t,d_reactor,fill_frac,rpm_screw)
     sec2results.dataframe(sec2resultsdf)
+    mfrate = sec2resultsdf['Value'][1]
+    sec2results.plotly_chart(charts.torr_analysis(t_d,t_t,mfrate,d_reactor,rpm_screw,heat_loss,cp_t))
 
-    st.header('III. Heat Transfer Analysis for Torrefaction Reactor')
-    st.caption('This section provides a basic simulation of the heat transfer in the system given a predefined heat input. Only heat trannsfer via conduction is considered in this simulation.')
-    st.caption('Content to be added by 20 SEP 2021')
+
+
+    # st.header('III. Heat Transfer Analysis for Torrefaction Reactor')
+    # st.caption('This section provides a basic simulation of the heat transfer in the system given a predefined heat input. Only heat transfer via conduction is considered in this simulation.')
+    # st.caption('Content to be added by 20 SEP 2021')
+    # sec3params = st.expander('Parameters',expanded=True)
+    # sec3results = st.expander('Results',expanded=True)
+    # sec3eqs = st.expander('Working Equations',expanded=False)
+    # sec2eqs.caption('To be added soon!')
+
+    
+
+    # q_rocketstove = sec3params.number_input('Heat Input from Rocket Stove (kW)',10.0,1000.0,500.0,)
+
+
+

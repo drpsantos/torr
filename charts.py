@@ -1,4 +1,5 @@
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import numpy as np
 import maths
 
@@ -20,7 +21,7 @@ def mass_flow_funnel(mass_flows,moisture_content):
         showticklabels = False
     )
     return fig
-    
+
 
 def torr_sizing(t1,t2,cp,mfr):
     reactor_diameter = np.arange(0.5,6.0,0.5)
@@ -44,3 +45,27 @@ def torr_sizing(t1,t2,cp,mfr):
     )
     return fig
 
+def torr_analysis(t1,t2,mfrate,d_reactor,rpm_screw,heat_loss,cp):
+    deltaT = np.arange(10.0,160.0,10.0)
+    ta_results = np.zeros(shape=(len(deltaT),8))
+    for i in range(0,len(deltaT)):
+        ta_results[i] = maths.get_thermal_analysis(t1,t2,mfrate,deltaT[i],d_reactor,rpm_screw,heat_loss,cp)
+    fig = make_subplots(rows=4,cols=1,subplot_titles=('Reactor Length','Residence Time','System Heat Requirement (kJ/s) for Sand as HTM','System Heat Requirement (kJ/s) for Air as HTM'))
+    fig.update_layout(height=1000,title="Effects of Varying Heating Rates on Reactor Parameters",title_x=0.5,showlegend=False)
+
+    # Heating Rate vs. Length
+    fig.add_trace(go.Scatter(x=deltaT,y=ta_results[:,1]),col=1,row=1)
+    fig.update_yaxes(title='m',col=1,row=1)
+
+    #Residence Time
+    fig.add_trace(go.Scatter(x=deltaT,y=ta_results[:,0]),col=1,row=2)
+    fig.update_yaxes(title='s',col=1,row=2)
+
+    #System Heat Requirement
+    fig.add_trace(go.Scatter(x=deltaT,y=ta_results[:,6]),col=1,row=3)
+    fig.update_yaxes(title='kJ/s',col=1,row=3)
+
+    fig.add_trace(go.Scatter(x=deltaT,y=ta_results[:,7]),col=1,row=4)
+    fig.update_yaxes(title='kJ/s',col=1,row=4)
+
+    return fig
