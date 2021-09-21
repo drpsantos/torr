@@ -113,7 +113,7 @@ if password == st.secrets['report_password']:
     #sec3eqs = st.expander('Working Equations',expanded=False)
 
     sec3exp2results.subheader('Experiment Setup')
-    sec3exp2results.write('The MBGF (Moving Bed Granular Filter) was fitted with the Rocket Stove (RS) as its primary heat source. Approximately 46kg of sand was placed in a chamber and the temperature was monitored for an hour without movement in the bed. The next hour, sand was conveyed out of the system and its temperature was measured.')
+    sec3exp2results.write('The MBGF (Moving Bed Granular Filter) was fitted with the Rocket Stove (RS) as its primary heat source. Approximately 48kg of sand was placed in a chamber and the temperature was monitored for an hour without movement in the bed. The next hour, sand was conveyed out of the system and its temperature was measured.')
     sec3exp2results.subheader('Experiment Results')
     sec3exp2results.markdown('The sand was able to reach a temperature of 126.4 degC after being heated for 170 mins. The computed sand heating rate is at **0.0123 degC/min kg**. The hot gas has an average temperature difference of 58.62 degC which can be approximated to a **42.08 kJ input of heat/kg of hot air.** This input contributes to the heating of the sand as well as losses from metal parts inside the MBGF')
 
