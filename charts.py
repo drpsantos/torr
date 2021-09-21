@@ -59,7 +59,7 @@ def torr_analysis(t1,t2,mfrate,d_reactor,rpm_screw,heat_loss,cp):
 
     #Residence Time
     fig.add_trace(go.Scatter(x=deltaT,y=ta_results[:,0]),col=1,row=2)
-    fig.update_yaxes(title='s',col=1,row=2)
+    fig.update_yaxes(title='min.',col=1,row=2)
 
     #System Heat Requirement
     fig.add_trace(go.Scatter(x=deltaT,y=ta_results[:,6]),col=1,row=3)
