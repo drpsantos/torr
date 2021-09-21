@@ -118,7 +118,7 @@ if password == st.secrets['report_password']:
     sec3exp2results.markdown('The sand was able to reach a temperature of 126.4 degC after being heated for 170 mins. The computed sand heating rate is at **0.0123 degC/min kg**. The hot gas has an average temperature difference of 58.62 degC which can be approximated to a **42.08 kJ input of heat/kg of hot air.** This input contributes to the heating of the sand as well as losses from metal parts inside the MBGF')
 
     sec3insights = st.expander('Insights & Recommendations',expanded=True)
-    sec3insights.markdown('At our current RS state, we can heat up 48kg (1 MBGF full) of sand to 500 degC 803.38 mins./13.38 hours.')
+    sec3insights.markdown('At our current RS state, we can heat up 48kg (1 MBGF full) of sand to 500 degC in 803.38 mins./13.38 hours.')
     sec3insights.markdown('Further development of RS design is recommended.')
 
 
