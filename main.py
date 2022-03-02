@@ -6,8 +6,8 @@ import plotly.express as px
 #import charts
 import pandas as pd
 from PIL import Image
-from google.oauth2 import service_account
-from gsheetsdb import connect
+# from google.oauth2 import service_account
+# from gsheetsdb import connect
 import datetime
 
 st.set_page_config(page_title="Torrefaction Dashboard",layout="centered",initial_sidebar_state="collapsed")
@@ -33,18 +33,18 @@ target_torr_mass = s0c2.number_input('Torrefied Biomass Needed (Tons)',0,100,75)
 target_harvest = s0c3.date_input('Target Start of Harvest',value=datetime.date(2022,8,15))
 
 
-# Create a connection object.
-conn = connect()
+# # Create a connection object.
+# conn = connect()
 
-# Perform SQL query on the Google Sheet.
-# Uses st.cache to only rerun when the query changes or after 10 min.
-@st.cache()
-def run_query(query):
-    rows = conn.execute(query, headers=1)
-    return rows
+# # Perform SQL query on the Google Sheet.
+# # Uses st.cache to only rerun when the query changes or after 10 min.
+# @st.cache()
+# def run_query(query):
+#     rows = conn.execute(query, headers=1)
+#     return rows
 
-sheet_url = st.secrets["public_gsheets_url"]
-rows = run_query(f'SELECT * FROM "{sheet_url}"')
+# sheet_url = st.secrets["public_gsheets_url"]
+# rows = run_query(f'SELECT * FROM "{sheet_url}"')
 
 def getFinalMass(m_i,mc_i,mc_o):
     m_o = m_i - (m_i*(mc_i-mc_o))
