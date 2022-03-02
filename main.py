@@ -10,7 +10,7 @@ from google.oauth2 import service_account
 from gsheetsdb import connect
 import datetime
 
-st.set_page_config(page_title="Torrefaction Dashboard",layout="centered",initial_sidebar_state="expanded")
+st.set_page_config(page_title="Torrefaction Dashboard",layout="centered",initial_sidebar_state="collapsed")
 
 hide_streamlit_style = """
 <style>
@@ -27,10 +27,10 @@ main2 = st.container()
 main3 = st.container()
 main4 = st.container()
 main.subheader('Key Targets')
-s0c1, s0c2 = main.columns(2)
+s0c1, s0c2, s0c3 = main.columns(3)
 target_test_burn = s0c1.date_input('Target Test Burn',value=datetime.date(2022,10,15))
 target_torr_mass = s0c2.number_input('Torrefied Biomass Needed (Tons)',0,100,75)
-target_harvest = s0c1.date_input('Target Start of Harvest',value=datetime.date(2022,8,15))
+target_harvest = s0c3.date_input('Target Start of Harvest',value=datetime.date(2022,8,15))
 
 
 # Create a connection object.
@@ -64,8 +64,9 @@ s1c1,s1c2,s1c3 = st.columns(3)
 s1c1.write('Harvest & Drying')
 wet_mc = s1c1.number_input('Wet Biomass Moisture Content',0.6)
 dry_mc = s1c1.number_input('Dry Biomass Moisture Content',0.38)
-harv_maxweeks = s1c1.number_input('Maximum Weeks for Harvesting',1,12,8)
-days_grow = s1c1.number_input('Plant Maturation (days)',90,150,120)
+harv_rateh = s1c1.number_input('Harvesting Rate (TPH)',0.0,2.0,0.5)
+#harv_maxweeks = s1c1.number_input('Maximum Weeks for Harvesting',1,12,8)
+#days_grow = s1c1.number_input('Plant Maturation (days)',90,150,120)
 
 s1c2.write('Pelletization')
 pell_mc = s1c2.number_input('Pellet Mositure Content',0.15)
@@ -87,28 +88,35 @@ biomass_dried = c2.metric('Dried', b_dry)
 b_wet = round(b_dry/(1-(wet_mc-dry_mc)),2)
 biomass_wet = c1.metric('Wet', b_wet)
 
-harv_rate = s1c1.number_input('Harvesting Rate (TPD)',b_wet/(harv_maxweeks*7),b_wet/(harv_maxweeks*7),b_wet/(harv_maxweeks*7))
+#harv_rate = s1c1.number_input('Harvesting Rate (TPD)',b_wet/(harv_maxweeks*7),b_wet/(harv_maxweeks*7),b_wet/(harv_maxweeks*7))
 
-st.subheader('Estimated Lead Times')
-s2c1, s2c2,s2c3 = st.columns(3)
-s2c1.write('Operations')
-hours_farm = s2c1.number_input('Farm work hours per day',8,16,8)
-hours_pell = s2c1.number_input('Pelletizer operating hours per day',8,24,16)
-hours_pmrrt = s2c1.number_input('PMRR Torrefier operating hours per day',8,24,16)
+# st.subheader('Estimated Lead Times')
+# s2c1, s2c2,s2c3 = st.columns(3)
+# s2c1.write('Operations')
 
-s2c2.write('Fuel Processing')
-days_drying = s2c2.number_input('Air Drying for Wet Biomass',1,7,5)
-days_leadpell = s2c2.number_input('Lead Time for Pelletization',0,30,24)
+m1c3,m1c4,m1c5 = main1.columns(3)
+days_drying = m1c3.slider('Days for Drying',1,7,5)
+days_storePell = m1c4.slider('Pellet Production Lead Time',0,21,6)
+days_storeTorr = m1c5.slider('Torrefaction Lead Time',5,21,24)
 
-s2c3.write('Transport & Logistics')
-days_MAStoGNPK = s2c3.number_input('Transport from Masbate to GNPK',3,24,12)
+hours_farm = m1c3.slider('Farm work hours per day',8,16,8)
+hours_pell = m1c4.slider('Pelletizer operating hours per day',8,24,16)
+hours_pmrrt = m1c5.slider('PMRR Torrefier operating hours per day',8,24,16)
+
+
+# s2c2.write('Fuel Processing')
+# days_drying = s2c2.number_input('Air Drying for Wet Biomass',1,7,5)
+# days_leadpell = s2c2.number_input('Lead Time for Pelletization',0,30,24)
+
+# s2c3.write('Transport & Logistics')
+# days_MAStoGNPK = s2c3.number_input('Transport from Masbate to GNPK',3,24,12)
 
 main3.subheader('Minimum Processing Rates in Tons/day')
 m3c1,m3c2,m3c3,m3c4 = main3.columns(4)
-harv_rate = round(b_wet/(harv_maxweeks*7),2)
+harv_rate = round(harv_rateh*hours_farm,2)
 m3c1.metric('Harvested',harv_rate)
-days_harv = harv_maxweeks*7
-dry_rate = round(b_dry/(harv_maxweeks*7),2)
+days_harv = round(b_wet/harv_rate,2)
+dry_rate = round(b_dry/days_harv,2)
 m3c2.metric('Dried Biomass',dry_rate)
 pell_rate =pell_processing_rate*hours_pell
 days_pell = b_dry/pell_rate
@@ -131,16 +139,10 @@ c3.metric('Mass Retention',str(round(mr_dried2pell*100,2))+'%')
 c4.metric('Mass Retention',str(round(mr_pell2torr*100,2))+'%')
 c4.metric('Total Mass Retention',str(round(mr_wet2torr*100,2))+'%')
 
+rangeend = int(days_torr + days_storeTorr + days_storePell + days_drying+14)
 
-
-m1c3,m1c4,m1c5 = main1.columns(3)
-days_drying = m1c3.slider('Days for Drying',1,30,5)
-days_storePell = m1c4.slider('Pellet Production Lead Time',0,30,6)
-days_storeTorr = m1c5.slider('Torrefaction Lead Time',1,30,24)
-
-#@st.cache(suppress_st_warning=True,allow_output_mutation=True)
-def projectSupply(harv_rate,dry_rate,pell_rate,torr_rate,days_drying,days_storePell,days_storeTorr,b_wet):
-    rangeend = 80
+@st.cache(suppress_st_warning=True,allow_output_mutation=True)
+def projectSupply(harv_rate,dry_rate,pell_rate,torr_rate,days_drying,days_storePell,days_storeTorr,b_wet,rangeend):
     df = pd.DataFrame(columns=['Wet','Total Wet','Available Wet','Dried','Available Dried','Total Dried','Pelletizer Input','Pelletizer Output','Total Pelletized','Available Pellets','Torrefied Input','Torrefied Output','Total Torrefied'],index=range(0,rangeend),dtype=float)
     df.iloc[0,0:3] = harv_rate
     df.iloc[0,3:] = 0.0
@@ -151,9 +153,9 @@ def projectSupply(harv_rate,dry_rate,pell_rate,torr_rate,days_drying,days_storeP
     start_torr = start_pell + days_storeTorr
 
     for i in range(1,rangeend):
-        if i < harv_maxweeks*7:
+        if i < days_harv-1:
             df['Wet'].iloc[i] = harv_rate
-        if i >= days_drying and i <days_drying+(harv_maxweeks*7):
+        if i >= days_drying and i <days_drying+days_harv:
             df['Dried'].iloc[i] = dry_rate
         if i >= start_pell and df['Total Pelletized'].iloc[i-1] < b_pell:
             df['Pelletizer Input'].iloc[i] = min(pell_rate/mr_dried2pell,df['Available Dried'].iloc[i-1])
@@ -172,55 +174,11 @@ def projectSupply(harv_rate,dry_rate,pell_rate,torr_rate,days_drying,days_storeP
         df['Available Wet'].iloc[i] = df['Wet'].iloc[i] + df['Available Wet'].iloc[i-1] - df['Dried'].iloc[i]
         df['Available Dried'].iloc[i] = df['Dried'].iloc[i] + df['Available Dried'].iloc[i-1] - df['Pelletizer Input'].iloc[i]
         df['Available Pellets'].iloc[i] = df['Pelletizer Output'].iloc[i] + df['Available Pellets'].iloc[i-1] - df['Torrefied Input'].iloc[i]
+        
     
     end_dry = min(df['Total Dried'].loc[df['Total Dried']>b_dry-1].index)
     end_pell = min(df['Total Pelletized'].loc[df['Total Pelletized']>b_pell-1].index)
     end_torr = min(df['Total Torrefied'].loc[df['Total Torrefied']>target_torr_mass-1].index)
-
-    # for i in range(1,120):
-    #     if df['Total Wet'].iloc[i-1] < b_wet:
-    #         df['Wet'].iloc[i] = harv_rate
-    #     else:
-    #         df['Wet'].iloc[i] = 0.0
-
-    #     df['Total Wet'].iloc[i] = df['Total Wet'].iloc[i-1] + df['Wet'].iloc[i]
-
-    #     if i >= days_drying:
-    #         if df['Wet'].iloc[i-days_drying] > 0.0:
-    #             df['Dried'].iloc[i] = dry_rate
-    #         else:
-    #             df['Dried'].iloc[i] = 0.0
-    #     else:
-    #         df['Dried'].iloc[i] = 0.0
-
-    #     df['Total Dried'].iloc[i] = df['Total Dried'].iloc[i-1] + df['Dried'].iloc[i]
-
-    #     if i>= start_pell and df['Total Pelletized'].iloc[i-1] < b_pell:
-    #         if df['Available Dried'].iloc[i-1]*mr_dried2pell > pell_rate:
-    #             df['Pelletizer Input'].iloc[i] = pell_rate/mr_dried2pell
-    #             df['Pelletizer Output'].iloc[i] = pell_rate
-        
-    #     if i == start_pell:
-    #         df['Available Dried'].iloc[i] = df['Dried'].iloc[i]+ df['Available Dried'].iloc[i-1] - df['Pelletizer Input'].iloc[i]
-    #     elif df['Available Dried'].iloc[i-1] <= 0.0:
-    #         df['Available Dried'].iloc[i] = 0.0
-    #     else:
-    #         df['Available Dried'].iloc[i] = df['Dried'].iloc[i]+ df['Available Dried'].iloc[i-1] - df['Pelletizer Input'].iloc[i]
-    #     df['Total Pelletized'].iloc[i] = df['Total Pelletized'].iloc[i-1] + df['Pelletizer Input'].iloc[i]
-
-    #     if i == start_torr:
-    #         df['Available Pellets'].iloc[i] = df['Total Pelletized'].iloc[i]
-    #     elif df['Available Pellets'].iloc[i-1] <= 0.0:
-    #         df['Available Pellets'].iloc[i] = 0.0
-    #     else:
-    #         df['Available Pellets'].iloc[i] = df['Pelletizer Output'].iloc[i] + df['Available Pellets'].iloc[i-1] - df['Torrefied Input'].iloc[i]
-
-    #     if i >= start_torr and df['Total Torrefied'].iloc[i-1] < target_torr_mass :
-    #         if df['Available Pellets'].iloc[i] > torr_rate:
-    #             df['Torrefied Input'].iloc[i] = torr_rate
-    #             df['Torrefied Output'].iloc[i] = torr_rate * mr_pell2torr
-
-    #     df['Total Torrefied'].iloc[i] = df['Total Torrefied'].iloc[i-1] + df['Torrefied Output'].iloc[i]
 
     fig = go.Figure()
     fig.add_hline(y=b_wet)
@@ -231,7 +189,9 @@ def projectSupply(harv_rate,dry_rate,pell_rate,torr_rate,days_drying,days_storeP
     fig.add_trace(go.Scatter(x=np.arange(0,rangeend),y=df['Total Dried'],name='Dried'))
     fig.add_trace(go.Scatter(x=np.arange(0,rangeend),y=df['Total Pelletized'],name='Pelletized'))
     fig.add_trace(go.Scatter(x=np.arange(0,rangeend),y=df['Total Torrefied'],name='Torrefied'))
-    fig.update_layout(showlegend=True,yaxis_title='Tons Produced',xaxis_title = 'Days from Start of Harvest')
+    fig.update_layout(showlegend=True,yaxis_title='Tons Produced',xaxis_title = 'Days from Start of Harvest',title = 'Production Timeline',title_x=0.5)
+    fig.add_vline(x=end_torr)
+    fig.update_xaxes(range=(0,min(100,rangeend)))
 
     fig2 = go.Figure()
     #fig2.add_hline(y=target_torr_mass)
@@ -239,21 +199,27 @@ def projectSupply(harv_rate,dry_rate,pell_rate,torr_rate,days_drying,days_storeP
     fig2.add_trace(go.Scatter(x=np.arange(0,rangeend),y=df['Dried'],name='Dried'))
     fig2.add_trace(go.Scatter(x=np.arange(0,rangeend),y=df['Pelletizer Output'],name='Pelletized'))
     fig2.add_trace(go.Scatter(x=np.arange(0,rangeend),y=df['Torrefied Output'],name='Torrefied'))
-    fig2.update_layout(showlegend=True,yaxis_title='Tons Produced/day',xaxis_title = 'Days from Start of Harvest')
-    main1.write(df)
-    return fig,fig2
+    fig2.update_layout(showlegend=True,yaxis_title='Throughput per day (Tons)',xaxis_title = 'Days from Start of Harvest', title='Production Rate',title_x=0.5)
+    fig2.update_xaxes(range=(0,min(100,rangeend)))
+    fig.add_annotation(x=end_torr,y=0,text="Day "+str(end_torr),showarrow=False,yshift=30,textangle=0,bgcolor='yellow')
+    return fig,fig2,end_harv,end_dry,end_pell,end_torr
 
-fig1, fig2 = projectSupply(harv_rate,dry_rate,pell_rate,torr_rate,days_drying,days_storePell,days_storeTorr,b_wet)
+fig1, fig2,end_dry,end_harv,end_pell,end_torr = projectSupply(harv_rate,dry_rate,pell_rate,torr_rate,days_drying,days_storePell,days_storeTorr,b_wet,rangeend)
 main1.plotly_chart(fig1)
 main1.plotly_chart(fig2)
 
+days_MAStoGNPK = st.sidebar.number_input('MAS to GNPK Travel (days)',1,21,14)
+
 harvest_end = target_harvest + datetime.timedelta(days=days_harv)
 dry_start = target_harvest + datetime.timedelta(days=days_drying)
-dry_end = dry_start + datetime.timedelta(days=days_harv)
-pell_start = dry_start
-pell_end = pell_start + datetime.timedelta(days=days_pell)
-torr_start = pell_start + datetime.timedelta(days=days_leadpell)
-torr_end = torr_start + datetime.timedelta(days=days_torr)
+#dry_end = dry_start + datetime.timedelta(days=days_harv)
+dry_end = target_harvest + datetime.timedelta(days=end_dry)
+pell_start = dry_start+ datetime.timedelta(days=days_storePell)
+#pell_end = pell_start + datetime.timedelta(days=days_pell)
+pell_end = target_harvest + datetime.timedelta(days=end_pell)
+torr_start = pell_start + datetime.timedelta(days=days_storeTorr)
+torr_end = target_harvest + datetime.timedelta(days=end_torr)
+#torr_end = torr_start + datetime.timedelta(days=days_torr)
 MAStoGNPK_start = torr_end+datetime.timedelta(days=1)
 MAStoGNPK_end = MAStoGNPK_start+datetime.timedelta(days=days_MAStoGNPK)
 earliest_test_burn = MAStoGNPK_end + datetime.timedelta(days=1)
@@ -271,16 +237,20 @@ fig = px.timeline(df, x_start="Start", x_end="Finish", y="Task", color="Group")
 fig.update_yaxes(autorange="reversed")
 fig.add_vline(x= target_test_burn)
 fig.add_vline(x=earliest_test_burn)
+fig.add_vline(x=target_harvest)
 fig.add_vline(x=datetime.date.today())
 fig.add_annotation(x=datetime.date.today(), y=-1,text="Today",showarrow=False,yshift=40,textangle=90)
 fig.add_annotation(x=earliest_test_burn, y=-1,text="Earliest Test Burn <br>"+str(earliest_test_burn),showarrow=False,yshift=30,textangle=90)
+fig.add_annotation(x=target_harvest, y=-1,text="Target Harvest<br>"+str(target_harvest),showarrow=False,yshift=30,textangle=90)
 fig.add_annotation(x=target_test_burn, y=-1,text="Target Test Burn <br>"+str(target_test_burn),showarrow=False,yshift=30,textangle=90)
 fig.update_layout(legend=dict(
     orientation="h",
     yanchor="bottom",
     y=-0.21,
     xanchor="right",
-    x=1
+    x=1,
 ))
+fig.update_xaxes(range=(target_harvest-datetime.timedelta(days=10),earliest_test_burn+datetime.timedelta(days=10)))
+fig.update_yaxes(showgrid=True)
 main.subheader('Projected Timeline')
 main.plotly_chart(fig)
