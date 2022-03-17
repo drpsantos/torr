@@ -181,7 +181,7 @@ legend=dict(
     xanchor="right",
     x=1,
 ))
-fig.update_xaxes(range=(datetime.date(2022,9,1),datetime.date(2023,1,1)))
+fig.update_xaxes(range=(datetime.date(2022,6,1),datetime.date(2023,1,1)))
 fig.update_yaxes(showgrid=True)
 fig.add_vline(x=target_harvest+datetime.timedelta(days=end_torr), line_dash="dot", line_color='purple', line_width=0.5)
 main.subheader('Projected Timeline')
@@ -229,7 +229,7 @@ fig.update_layout(width = 800, height=600,
     x=1,
 ))
                 
-fig.update_xaxes(range=(datetime.date(2022,9,1),datetime.date(2023,1,1)))
+fig.update_xaxes(range=(datetime.date(2022,6,1),datetime.date(2023,1,1)))
 fig.update_yaxes(title_text='Tons Produced',row=1,col=1)
 fig.update_yaxes(title_text='Throughput per day (Tons)',row=2,col=1)
 main3.plotly_chart(fig)
